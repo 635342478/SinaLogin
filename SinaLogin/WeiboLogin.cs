@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Noesis.Javascript;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Web;
-using System.Net;
-using System.Threading;
-using System.IO;
-using System.Drawing;
 
 namespace SinaLogin
 {
@@ -28,7 +26,6 @@ namespace SinaLogin
         public CookieContainer MyCookies
         {
             get { return myCookies; }
-            set { myCookies = value; }
         }
 
         private const string PUBKEY = "EB2A38568661887FA180BDDB5CABD5F21C7BFD59C090CB2D245A87AC253062882729293E5506350508E7F9AA3BB77F4333231490F915F6D63C55FE2F08A49B353F444AD3993CACC02DB784ABBB8E42A9B1BBFFFB38BE18D78E87A0E41B9B8F73A928EE0CCEE1F6739884B9777E4FE9E88A1BBE495927AC4A799B3181D6442443";
@@ -81,10 +78,9 @@ namespace SinaLogin
         /// </summary>
         /// <param name="door">验证码</param>
         /// <returns>结果码</returns>
-        public string End(string door)
+        public string End(string door = null)
         {
-            string retcode;
-            myCookies = GetCookie(door, out retcode);
+            myCookies = GetCookie(door, out string retcode);
             return retcode;
         }
 
@@ -138,13 +134,36 @@ namespace SinaLogin
         /// <returns></returns>
         private string GetSP(string pwd, string servertime, string nonce, string pubkey)
         {
-            StreamReader sr = new StreamReader("sinaSSOEncoder"); //从文本中读取修改过的JS
-            string js = sr.ReadToEnd();
-            //自定义function进行加密
-            js += "function getpass(pwd,servicetime,nonce,rsaPubkey){var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');var password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);return password;}";
-            ScriptEngine se = new ScriptEngine(ScriptLanguage.JavaScript);
-            object obj = se.Run("getpass", new object[] { pwd, servertime, nonce, pubkey }, js);
-            return obj.ToString();
+            string js = "";
+            using (StreamReader sr = new StreamReader("sinaSSOEncoder.js"))
+            {
+                //读取修改过的JS
+                js = sr.ReadToEnd();
+                //自定义function进行加密
+                //js += "function getpass(pwd,servicetime,nonce,rsaPubkey){var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);return password;}";
+                js += "var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);";
+            }
+
+            using (JavascriptContext context = new JavascriptContext())
+            {
+                // 设置参数
+                context.SetParameter("pwd", pwd);
+                context.SetParameter("servicetime", servertime);
+                context.SetParameter("nonce", nonce);
+                context.SetParameter("rsaPubkey", pubkey);
+                context.SetParameter("password", "");
+
+                // 运行脚本
+                context.Run(js);
+
+                // 获取结果
+                object o = context.GetParameter("password");
+                if (o == null)
+                {
+                    return null;
+                }
+                return o.ToString();
+            }
         }
 
         /// <summary>
@@ -157,6 +176,12 @@ namespace SinaLogin
         {
             CookieContainer myCookieContainer = new CookieContainer();
             string sp = GetSP(Password, servertime, nonce, PUBKEY);//得到加密后的密码
+            if(sp == null)
+            {
+                retcode = "RSA加密失败";
+                return null;
+            }
+
             string postData = "entry=weibo&gateway=1&from=&savestate=7&useticket=1&pagerefer=&vsnf=1&su=" + su
                             + "&service=miniblog&servertime=" + servertime
                             + "&nonce=" + nonce

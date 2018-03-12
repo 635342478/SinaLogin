@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SinaLogin
@@ -89,7 +85,7 @@ namespace SinaLogin
                 }
                 else
                 {
-                    result = wb.End(null);
+                    result = wb.End();
                     string html = wb.Get("http://weibo.com/5237923337/");
                     SetText(txtOutput, html);
                 }
