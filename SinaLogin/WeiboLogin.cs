@@ -135,12 +135,18 @@ namespace SinaLogin
         private string GetSP(string pwd, string servertime, string nonce, string pubkey)
         {
             string js = "";
-            using (StreamReader sr = new StreamReader("sinaSSOEncoder.js"))
+
+            Type type = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType;
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(type.Namespace + ".sinaSSOEncoder.js"))
             {
-                //读取修改过的JS
-                js = sr.ReadToEnd();
-                //自定义function进行加密
-                js += "var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);";
+                using (StreamReader sr = new StreamReader(stream))
+                {
+                    //读取修改过的JS
+                    js = sr.ReadToEnd();
+                    //自定义function进行加密
+                    js += "var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);";
+                }
             }
 
             // 使用了Noesis.JavaScript 来运行js

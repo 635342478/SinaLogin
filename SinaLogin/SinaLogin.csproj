@@ -91,9 +91,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="sinaSSOEncoder.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="sinaSSOEncoder.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
