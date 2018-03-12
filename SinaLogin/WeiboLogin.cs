@@ -140,10 +140,11 @@ namespace SinaLogin
                 //读取修改过的JS
                 js = sr.ReadToEnd();
                 //自定义function进行加密
-                //js += "function getpass(pwd,servicetime,nonce,rsaPubkey){var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);return password;}";
                 js += "var RSAKey=new sinaSSOEncoder.RSAKey();RSAKey.setPublic(rsaPubkey,'10001');password=RSAKey.encrypt([servicetime,nonce].join('\\t')+'\\n'+pwd);";
             }
 
+            // 使用了Noesis.JavaScript 来运行js
+            // https://github.com/JavascriptNet/Javascript.Net
             using (JavascriptContext context = new JavascriptContext())
             {
                 // 设置参数
