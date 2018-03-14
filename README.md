@@ -1,7 +1,7 @@
 # C#实现新浪微博模拟登录
 <del> 以前写的，现在重构了一下代码。</del>
 
-多年以后发现他还能用，顺手把 js 解释器换成了[Noesis.JavaScript](https://github.com/JavascriptNet/Javascript.Net)，微软自家的 Windows Script Control 太老了，而且只能在 Windows 平台上用。
+多年以后发现他还能用，顺手把 js 解释器换成了[Noesis.JavaScript](https://github.com/JavascriptNet/Javascript.Net)，微软自家的 Windows Script Control 太老了。
 
 相关项目：[微博秒赞器](https://github.com/huiyadanli/WeiboMonitor)，已失效。
 
